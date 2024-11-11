@@ -1,0 +1,47 @@
+version: '3'
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "${FRONTEND_PORT}:${FRONTEND_PORT}"
+    command: npm start
+    depends_on:
+      - api
+      - bff
+
+  bff:
+    build: ./bff
+    ports:
+      - "${BFF_PORT}:${BFF_PORT}"
+    depends_on:
+      - api
+      - messaging
+
+  api:
+    build: ./api
+    ports:
+      - "${API_PORT}:${API_PORT}"
+    depends_on:
+      - db
+      - messaging
+
+  db:
+    image: mongo:6.0
+    ports:
+      - "${DB_PORT}:${DB_PORT}"
+    volumes:
+      - mongo-data:/data/db
+
+  messaging:
+    image: rabbitmq:3-management
+    ports:
+      - "${MESSAGING_PORT}:${MESSAGING_PORT}"
+      - "${MESSAGING_MANAGEMENT_PORT}:${MESSAGING_MANAGEMENT_PORT}"
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASS}
+
+volumes:
+  mongo-data:
